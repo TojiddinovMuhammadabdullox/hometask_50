@@ -10,6 +10,7 @@ class CourseView extends StatefulWidget {
 class _CourseViewState extends State<CourseView> {
   final CourseController courseController = CourseController();
   bool isGridView = true;
+  double downloadProgress = 0.0;
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +29,23 @@ class _CourseViewState extends State<CourseView> {
         ],
       ),
       body: FutureBuilder<Course>(
-        future: courseController.getCourse(),
+        future: courseController.getCourse((progress) {
+          setState(() {
+            downloadProgress = progress;
+          });
+        }),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                      'Downloading: ${(downloadProgress * 100).toStringAsFixed(2)}%'),
+                  LinearProgressIndicator(value: downloadProgress),
+                ],
+              ),
+            );
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData) {
